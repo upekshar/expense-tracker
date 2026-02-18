@@ -1,0 +1,41 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Sidebar from "./components/SideBar";
+import Dashboard from "./pages/Dashboard";
+import Expenses from "./pages/Expenses";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
+import { Toaster } from "react-hot-toast";
+import { useOfflineSync } from "./hooks/useOfflineSync";
+import { SyncBanner } from "./pages/ScanBanner";
+
+function App() {
+  const isOnline = useOfflineSync();
+
+  return (
+    <Router>
+      <div className="flex h-screen bg-gray-100">
+        {!isOnline && (
+          <div className="bg-yellow-500 text-white text-center p-2">
+            You are offline. Changes will sync automatically.
+          </div>
+        )}
+         <SyncBanner />
+
+        <Sidebar />
+
+        <div className="flex-1 p-6 overflow-auto">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/expenses" element={<Expenses />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+          <Toaster position="top-right" />
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+
+export default App;
