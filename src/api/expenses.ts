@@ -6,31 +6,26 @@ const API_URL = `${BASE_URL}/expenses`;
 
 
 // Fetch expenses with pagination
+// src/api/expenses.ts
 export const fetchExpenses = async (
-  page: number,
-  limit: number,
-  category: string,
+  _page: number,
+  _limit: number,
+  category: string
 ) => {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-  });
+  const res = await fetch(API_URL);
+  const all = await res.json();
 
-  if (category !== "All") {
-    params.append("category", category);
-  }
+  // filter by category if needed
+  const filtered = category !== "All"
+    ? all.filter((e: any) => e.category === category)
+    : all;
 
-  const response = await fetch(`${API_URL}?${params}`);
-
-  if (!response.ok) throw new Error("Network error");
-
-  const data = await response.json();
-
-  // ✅ Save locally
-  localStorage.setItem("expenses_cache", JSON.stringify(data));
-
-  return { data };
+  return {
+    data: filtered,
+    total: filtered.length,
+  };
 };
+
 
 // Add expense
 export const addExpense = async (expense: Expense) => {
