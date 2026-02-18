@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Sidebar from "./components/SideBar";
 import Dashboard from "./pages/Dashboard";
 import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
@@ -20,9 +19,6 @@ function App() {
           </div>
         )}
          <SyncBanner />
-
-        <Sidebar />
-
         <div className="flex-1 p-6 overflow-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />

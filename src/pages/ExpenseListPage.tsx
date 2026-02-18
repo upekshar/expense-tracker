@@ -29,71 +29,42 @@ export default function ExpenseListPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Expense>>({});
 
-  // Fetch server data
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isLoading,
-    isFetchingNextPage,
-  } = useExpenses(limit, categoryFilter);
-
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } = useExpenses(limit, categoryFilter);
   const { update, remove } = useExpenseMutations();
-  const offlineQueue = useSelector(
-    (state: RootState) => state.expenses.offlineQueue
-  ) as OfflineAction[];
+  const offlineQueue = useSelector((state: RootState) => state.expenses.offlineQueue) as OfflineAction[];
 
   // --------------------------------------------
   // Build displayed expense list
   // --------------------------------------------
-
-  // 1) Flatten server pages & cache
   const serverExpenses = data?.pages.flatMap((p) => p.data) ?? [];
-
-  // 2) Apply filter to server list
-  const filteredServer = serverExpenses.filter((exp) =>
-    categoryFilter === "All" ? true : exp.category === categoryFilter
-  );
-
-  // 3) Sort server items
+  const filteredServer = serverExpenses.filter((exp) => categoryFilter === "All" ? true : exp.category === categoryFilter);
   const sortedServer = filteredServer.sort((a, b) => {
     switch (sortOption) {
-      case "date_asc":
-        return +new Date(a.date) - +new Date(b.date);
-      case "date_desc":
-        return +new Date(b.date) - +new Date(a.date);
-      case "amount_asc":
-        return a.amount - b.amount;
-      case "amount_desc":
-        return b.amount - a.amount;
-      default:
-        return 0;
+      case "date_asc": return +new Date(a.date) - +new Date(b.date);
+      case "date_desc": return +new Date(b.date) - +new Date(a.date);
+      case "amount_asc": return a.amount - b.amount;
+      case "amount_desc": return b.amount - a.amount;
+      default: return 0;
     }
   });
 
-  // 4) Apply offline queue
   const offlineUpdateMap = new Map<string, Expense>();
   const offlineDeleteSet = new Set<string>();
   const offlineAddList: Expense[] = [];
 
   offlineQueue.forEach((action) => {
     if (action.type === "add") offlineAddList.push(action.payload as Expense);
-    if (action.type === "update")
-      offlineUpdateMap.set((action.payload as Expense).id, action.payload as Expense);
+    if (action.type === "update") offlineUpdateMap.set((action.payload as Expense).id, action.payload as Expense);
     if (action.type === "delete") offlineDeleteSet.add(action.payload as string);
   });
 
-  // 5) Merge into final list
   const merged = [
-    // offline adds always first
     ...offlineAddList,
-    // server items, with offline updates applied & deletes removed
     ...sortedServer
       .filter((exp) => !offlineDeleteSet.has(exp.id))
       .map((exp) => offlineUpdateMap.get(exp.id) ?? exp),
   ];
 
-  // Remove duplicates
   const seen = new Set<string>();
   const displayedExpenses: Expense[] = merged.filter((exp) => {
     if (seen.has(exp.id)) return false;
@@ -106,7 +77,6 @@ export default function ExpenseListPage() {
   // --------------------------------------------
   // Handlers: Edit / Save / Delete
   // --------------------------------------------
-
   const startEditing = (exp: Expense) => {
     setEditingId(exp.id);
     setFormData(exp);
@@ -118,7 +88,6 @@ export default function ExpenseListPage() {
 
   const saveEditing = () => {
     if (!editingId) return;
-
     const updatedExpense = { id: editingId, ...formData } as Expense;
 
     if (!navigator.onLine) {
@@ -129,9 +98,7 @@ export default function ExpenseListPage() {
         if (!oldData) return oldData;
         const updatedPages = oldData.pages.map((page: any) => ({
           ...page,
-          data: page.data.map((e: any) =>
-            e.id === updatedExpense.id ? updatedExpense : e
-          ),
+          data: page.data.map((e: any) => e.id === updatedExpense.id ? updatedExpense : e),
         }));
         return { ...oldData, pages: updatedPages };
       });
@@ -180,32 +147,28 @@ export default function ExpenseListPage() {
   // --------------------------------------------
   // UI
   // --------------------------------------------
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0">
+
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center mb-2">
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="border rounded p-1"
+          className="border rounded p-1 w-full sm:w-auto"
         >
           {categories.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
+            <option key={c} value={c}>{c}</option>
           ))}
         </select>
 
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
-          className="border rounded p-1"
+          className="border rounded p-1 w-full sm:w-auto"
         >
           {sortOptions.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
+            <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
       </div>
@@ -214,7 +177,6 @@ export default function ExpenseListPage() {
         <p className="text-center text-gray-500">Loading...</p>
       )}
 
-      {/* No Items */}
       {!isInitialLoading && displayedExpenses.length === 0 && (
         <p className="text-center text-gray-500">No expenses found</p>
       )}
@@ -222,76 +184,67 @@ export default function ExpenseListPage() {
       {/* Expense List */}
       {displayedExpenses.map((exp) => {
         const isOffline = offlineQueue.some(
-          (o) =>
-            (o.type === "add" || o.type === "update") &&
-            (o.payload as Expense).id === exp.id
+          (o) => (o.type === "add" || o.type === "update") && (o.payload as Expense).id === exp.id
         );
 
         return (
           <div
             key={exp.id}
-            className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-lg shadow hover:shadow-md transition"
+            className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 sm:p-4 rounded-lg shadow hover:shadow-md transition min-w-0"
           >
-            <div className="flex flex-col gap-1 w-full sm:w-2/3">
+            {/* Expense Info / Editing */}
+            <div className="flex flex-col gap-1 w-full sm:w-2/3 min-w-0">
               {editingId === exp.id ? (
-                <>
+                <div className="flex flex-col gap-2 w-full">
                   <input
                     type="text"
                     value={formData.title || ""}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, title: e.target.value }))
-                    }
-                    className="border rounded p-1 w-full"
+                    onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                    className="border rounded p-1 w-full min-w-0"
+                    placeholder="Title"
                   />
                   <input
                     type="number"
-                    value={formData.amount || 0}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, amount: Number(e.target.value) }))
-                    }
-                    className="border rounded p-1 w-full"
+                    min={0.01}
+                    value={formData.amount || ""}
+                    onChange={(e) => setFormData((p) => ({ ...p, amount: Number(e.target.value) }))}
+                    className="border rounded p-1 w-full min-w-0"
+                    placeholder="Amount"
                   />
                   <input
                     type="date"
                     value={formData.date || ""}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, date: e.target.value }))
-                    }
-                    className="border rounded p-1 w-full"
+                    onChange={(e) => setFormData((p) => ({ ...p, date: e.target.value }))}
+                    className="border rounded p-1 w-full min-w-0"
                   />
-                </>
+                </div>
               ) : (
                 <>
-                  <span className="font-semibold text-lg">
+                  <span className="font-semibold text-lg truncate">
                     {exp.title}
                     {isOffline && (
-                      <span className="ml-2 text-xs text-yellow-600">
-                        (Offline)
-                      </span>
+                      <span className="ml-2 text-xs text-yellow-600">(Offline)</span>
                     )}
                   </span>
-                  <span className="text-gray-500 text-sm">
-                    {exp.category} • {exp.date}
-                  </span>
-                  <span className="font-medium text-gray-800">
-                    ${exp.amount}
-                  </span>
+                  <span className="text-gray-500 text-sm truncate">{exp.category} • {exp.date}</span>
+                  <span className="font-medium text-gray-800 truncate">${exp.amount}</span>
                 </>
               )}
             </div>
 
-            <div className="flex gap-2 mt-2 sm:mt-0">
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
               {editingId === exp.id ? (
                 <>
                   <button
                     onClick={saveEditing}
-                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 w-full sm:w-auto"
                   >
                     Save
                   </button>
                   <button
                     onClick={cancelEditing}
-                    className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
+                    className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 w-full sm:w-auto"
                   >
                     Cancel
                   </button>
@@ -318,7 +271,6 @@ export default function ExpenseListPage() {
       })}
 
       {/* Load More */}
-   
       {hasNextPage && (
         <div className="flex justify-center mt-4">
           <button
