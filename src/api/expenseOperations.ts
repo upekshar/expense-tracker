@@ -3,29 +3,23 @@ import type { Expense } from "../types/Expense";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_URL = `${BASE_URL}/expenses`;
 
+/**
+ *
+ * calling apis for different operations
+ */
 
-
-// Fetch expenses with pagination
-// src/api/expenses.ts
-export const fetchExpenses = async (
-  _page: number,
-  _limit: number,
-  category: string
-) => {
+export const fetchExpenses = async () => {
   const res = await fetch(API_URL);
-  const all = await res.json();
 
-  // filter by category if needed
-  const filtered = category !== "All"
-    ? all.filter((e: any) => e.category === category)
-    : all;
+  if (!res.ok) {
+    throw new Error("Failed to fetch expenses");
+  }
 
-  return {
-    data: filtered,
-    total: filtered.length,
-  };
+  const data = await res.json();
+
+  // Return full list — filtering will happen in component
+  return data;
 };
-
 
 // Add expense
 export const addExpense = async (expense: Expense) => {
@@ -37,8 +31,6 @@ export const addExpense = async (expense: Expense) => {
   if (!response.ok) throw new Error("Add failed");
   return await response.json();
 };
-
-
 
 // Update expense
 export const updateExpense = async (expense: Expense) => {

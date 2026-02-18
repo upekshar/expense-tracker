@@ -1,8 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import Expenses from "./pages/Expenses";
-import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
 import { Toaster } from "react-hot-toast";
 import { useOfflineSync } from "./hooks/useOfflineSync";
 import { SyncBanner } from "./pages/ScanBanner";
@@ -22,9 +19,6 @@ function App() {
         <div className="flex-1 p-6 overflow-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/expenses" element={<Expenses />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/settings" element={<Settings />} />
           </Routes>
           <Toaster position="top-right" />
         </div>

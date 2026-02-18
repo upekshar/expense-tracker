@@ -1,9 +1,7 @@
-// src/redux/store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import expenseReducer from "./slices/expenseSlice";
 import syncReducer from "./slices/syncSlice";
 import { createOfflineMiddleware } from "./middleware/offlineMiddleware";
-
 
 export const store = configureStore({
   reducer: {

@@ -1,4 +1,3 @@
-
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { useOfflineSync } from "../hooks/useOfflineSync";
@@ -23,5 +22,5 @@ export function SyncBanner() {
     );
   }
 
-  return null; 
+  return null;
 }

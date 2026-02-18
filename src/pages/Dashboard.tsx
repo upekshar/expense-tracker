@@ -13,7 +13,6 @@ import Header from "../components/Header";
 export default function Dashboard() {
   return (
     <div className="flex flex-col gap-6">
-
       {/* Header */}
       <Header />
 
@@ -22,7 +21,9 @@ export default function Dashboard() {
         <StatCard
           title="Total Expenses"
           value="$560"
-          icon={<CurrencyDollarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />}
+          icon={
+            <CurrencyDollarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+          }
           color="bg-cyan-500"
         />
         <StatCard
@@ -40,7 +41,9 @@ export default function Dashboard() {
         <StatCard
           title="Shopping"
           value="$150"
-          icon={<ShoppingBagIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />}
+          icon={
+            <ShoppingBagIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+          }
           color="bg-purple-500"
         />
       </section>
